@@ -34,7 +34,7 @@ def is_packet_type_valid(packet_type: str):
 
 
 def is_coordinate_valid(coordinate: str):
-    return coordinate.isdigit() and MINIMUM_BOARD_EDGE < int(coordinate) < MAXIMUM_BOARD_EDGE
+    return coordinate.isdigit() and MINIMUM_BOARD_EDGE <= int(coordinate) <= MAXIMUM_BOARD_EDGE
 
 
 def is_data_length_valid(data_length: str):
