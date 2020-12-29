@@ -4,5 +4,5 @@ from abc import abstractmethod
 
 class IPacketParser:
     @abstractmethod
-    def parse_packet(self, pkt: bytes) -> SGPStruct:
+    def parse_packet(self, pkt: bytes):
         pass

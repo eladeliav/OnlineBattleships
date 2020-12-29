@@ -1,2 +1,1 @@
-from sgp_structs.sgp_struct import SGPStruct
-from sgp_structs.sgp_packet_type import SGPPacketType
+from sgp_structs.sgp_struct import SGPStruct, SGPPacketTypes, SUPPORTED_PACKET_TYPES
