@@ -1,9 +1,10 @@
 from packet_parsers import IPacketParser
-from sgp_structs import SGPStruct, SGPPacketTypes, SUPPORTED_PACKET_TYPES
-from IPy import IP
-from typing import List
+from sgp_structs import SGPStruct, SGPHeaders, SGPPacketTypes
+import socket
+from packet_parsers.header_validators import is_packet_type_valid, is_valid_header, HEADER_TO_VALIDATOR, \
+    HEADER_DELIMITER
 
-MINIMUM_EXPECTED_LINE_COUNT = 7
+EXPECTED_HEADER_COUNT = 5
 PACKET_TYPE_INDEX = 0
 SRC_IP_INDEX = 1
 DST_IP_INDEX = 2
@@ -13,43 +14,50 @@ DATA_LENGTH_INDEX = 5
 
 
 class BasicPacketParser(IPacketParser):
-    def is_ip_valid(self, ip: str):
-        ip_lines = ip.split('.')
-        if len(ip_lines) != 4:
-            return False
-        for x in ip_lines:
-            if not x.isdigit():
+    def receive_until(self, connection: socket.socket, delimiter='\n'):
+        current_byte = ''
+        data = ''
+        while current_byte != delimiter:
+            current_byte = connection.recv(1).decode()
+            if not current_byte:
+                return None
+            data += current_byte
+        return data
+
+    def split_header_data(self, data_with_header):
+        delimiter_index = data_with_header.find(HEADER_DELIMITER)
+        header = data_with_header[delimiter_index]
+        data = data_with_header[delimiter_index + 1:]
+        return header, data
+
+    def receive_headers(self, connection: socket.socket):
+        headers = {}
+        for _ in range(EXPECTED_HEADER_COUNT):
+            current = self.receive_until(connection)
+            if not is_valid_header(current):
                 return False
-            i = int(x)
-            if i < 0 or i > 255:
-                return False
-        return True
 
-    def parse_packet(self, pkt: bytes):
-        pkt_lines = pkt.decode().split()
+            header, data = self.split_header_data(current)
+            headers[header] = data
+        return headers
 
-        if len(pkt_lines) < MINIMUM_EXPECTED_LINE_COUNT:
+    def parse_packet(self, connection: socket.socket):
+        packet_type = self.receive_until(connection)
+        if not is_packet_type_valid(packet_type):
             return False
 
-        pkt_type = pkt_lines[PACKET_TYPE_INDEX]
-        if pkt_type not in SUPPORTED_PACKET_TYPES:
+        headers = self.receive_headers(connection)
+        if not headers:
             return False
 
-        src_ip = pkt_lines[SRC_IP_INDEX]
-        dst_ip = pkt_lines[DST_IP_INDEX]
-        if not self.is_ip_valid(src_ip) or not self.is_ip_valid(dst_ip):
-            return False
+        content_length = headers[SGPHeaders.DATA_LENGTH]
+        # receive a single '\n' according to the protocol
+        connection.recv(1)
 
-        x_coord = pkt_lines[X_COORD_INDEX]
-        y_coord = pkt_lines[Y_COORD_INDEX]
-        data_length = pkt_lines[DATA_LENGTH_INDEX]
-        if not all(map(str.isdigit, [x_coord, y_coord, data_length])):
-            return False
+        data = connection.recv(content_length).decode()
+        src_ip = headers[SGPHeaders.SOURCE_IP]
+        dst_ip = headers[SGPHeaders.DESTINATION_IP]
+        x_coord = headers[SGPHeaders.X_COORDINATE]
+        y_coord = headers[SGPHeaders.Y_COORDINATE]
 
-        data = ""
-        if int(data_length) >= 0:
-            data = pkt_lines[7]
-        if len(data) != int(data_length):
-            return False
-        
-        return SGPStruct(pkt_type, src_ip, dst_ip, int(x_coord), int(y_coord), int(data_length), data)
+        return SGPStruct(packet_type, src_ip, dst_ip, x_coord, y_coord, content_length, data)

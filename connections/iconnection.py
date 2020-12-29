@@ -5,7 +5,11 @@ from sgp_structs import SGPStruct
 class IConnection:
 
     @abstractmethod
-    def send_guess(self, x_coordinate: int, y_coordinate: int):
+    def initialize_connection(self):
+        pass
+
+    @abstractmethod
+    def send_packet(self, pkt_type, x_coord, y_coord, msg):
         pass
 
     @abstractmethod
