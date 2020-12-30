@@ -23,7 +23,8 @@ def connect_to_peer():
 
 def main():
     connect_or_host = input("[0] host, [1] connect")
-    while not connect_or_host.isdigit() or not int(connect_or_host) in (ConstantNetworkInfo.HOST, ConstantNetworkInfo.CONNECT):
+    while not connect_or_host.isdigit() or not int(connect_or_host) in (
+            ConstantNetworkInfo.HOST, ConstantNetworkInfo.CONNECT):
         connect_or_host = input("Try again: ")
 
     if int(connect_or_host) == ConstantNetworkInfo.HOST:

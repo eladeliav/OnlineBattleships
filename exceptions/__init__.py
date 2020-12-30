@@ -1,1 +1,2 @@
-from exceptions.exceptions import ShipNotFoundError, SGPError, PacketFormatError, PacketTimingError
+from exceptions.exceptions import ShipNotFoundError, SGPError, PacketFormatError, PacketTimingError, \
+    ReceiveInterruptedError, ReceiveTimedOutError

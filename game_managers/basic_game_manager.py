@@ -80,17 +80,18 @@ class BasicGameManager:
             did_hit = response.data == ConstantNetworkInfo.DID_HIT_DATA
             if did_hit:
                 self.player.update_opponent_board(guess_x, guess_y, GameObjectType.Hit)
+
+                did_sink_response = self.get_valid_connection_response([SGPPacketTypes.SUNK])
+                if did_sink_response.data == ConstantNetworkInfo.DID_SINK_DATA:
+                    self.player.update_opponent_board(guess_x, guess_y, GameObjectType.Sunk)
+
+                    did_lose_response = self.get_valid_connection_response([SGPPacketTypes.LOSE])
+                    if did_lose_response.data == ConstantNetworkInfo.DID_LOSE_DATA:
+                        self.winner = ConstantMessages.LOCAL_PLAYER_WIN
+                        return True
+
             else:
                 self.player.update_opponent_board(guess_x, guess_y, GameObjectType.Miss)
-
-            did_sink_response = self.get_valid_connection_response([SGPPacketTypes.SUNK])
-            if did_sink_response.data == ConstantNetworkInfo.DID_SINK_DATA:
-                self.player.update_opponent_board(guess_x, guess_y, GameObjectType.Sunk)
-
-            did_lose_response = self.get_valid_connection_response([SGPPacketTypes.LOSE])
-            if did_lose_response.data == ConstantNetworkInfo.DID_LOSE_DATA:
-                self.winner = ConstantMessages.LOCAL_PLAYER_WIN
-                return True
 
             my_turn = did_hit
         return False
@@ -109,16 +110,17 @@ class BasicGameManager:
             did_sink_data = int(did_sink)
 
             self.send_response(SGPPacketTypes.HIT, guess_x, guess_y, str(did_hit_data))
-            self.send_response(SGPPacketTypes.SUNK, guess_x, guess_y, str(did_sink_data))
+            if did_hit:
+                self.send_response(SGPPacketTypes.SUNK, guess_x, guess_y, str(did_sink_data))
+                if did_sink:
+                    did_lose = self.player.did_lose()
+                    did_lose_data = int(did_lose)
+                    self.send_response(SGPPacketTypes.LOSE, ConstantNetworkInfo.DEFAULT_COORDINATE,
+                                       ConstantNetworkInfo.DEFAULT_COORDINATE, str(did_lose_data))
 
-            did_lose = self.player.did_lose()
-            did_lose_data = int(did_lose)
-            self.send_response(SGPPacketTypes.LOSE, ConstantNetworkInfo.DEFAULT_COORDINATE,
-                               ConstantNetworkInfo.DEFAULT_COORDINATE, str(did_lose_data))
-
-            if did_lose:
-                self.winner = ConstantMessages.ENEMY_PLAYER_WIN
-                return True
+                    if did_lose:
+                        self.winner = ConstantMessages.ENEMY_PLAYER_WIN
+                        return True
 
             enemy_turn = did_hit
         return False

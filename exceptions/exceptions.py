@@ -12,3 +12,11 @@ class PacketFormatError(SGPError):
 
 class PacketTimingError(SGPError):
     pass
+
+
+class ReceiveInterruptedError(SGPError):
+    pass
+
+
+class ReceiveTimedOutError(SGPError):
+    pass
