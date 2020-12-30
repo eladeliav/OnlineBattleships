@@ -30,8 +30,6 @@ class BasicGameManager:
         while not game_over:
             try:
                 for turn_func, turn_msg in self.turn_order:
-                    self.player.display_my_board()
-                    self.player.display_guessing_board()
                     print(turn_msg)
                     game_over = turn_func()
                     if game_over:
@@ -69,6 +67,9 @@ class BasicGameManager:
     def do_local_turn(self):
         my_turn = True
         while my_turn:
+            self.player.display_my_board()
+            self.player.display_guessing_board()
+
             guess_x, guess_y = self.player.get_coordinate_from_user()
             guess_x = int(guess_x)
             guess_y = int(guess_y)
@@ -79,6 +80,8 @@ class BasicGameManager:
             did_hit = response.data == ConstantNetworkInfo.DID_HIT_DATA
             if did_hit:
                 self.player.update_opponent_board(guess_x, guess_y, GameObjectType.Hit)
+            else:
+                self.player.update_opponent_board(guess_x, guess_y, GameObjectType.Miss)
 
             did_sink_response = self.get_valid_connection_response([SGPPacketTypes.SUNK])
             if did_sink_response.data == ConstantNetworkInfo.DID_SINK_DATA:
@@ -89,8 +92,7 @@ class BasicGameManager:
                 self.winner = ConstantMessages.LOCAL_PLAYER_WIN
                 return True
 
-            else:
-                self.player.update_opponent_board(guess_x, guess_y, GameObjectType.Miss)
+
 
             my_turn = did_hit
         return False
@@ -98,6 +100,9 @@ class BasicGameManager:
     def do_enemy_turn(self):
         enemy_turn = True
         while enemy_turn:
+            self.player.display_my_board()
+            self.player.display_guessing_board()
+
             enemy_guess = self.get_valid_connection_response([SGPPacketTypes.GUESS])
             guess_x = int(enemy_guess.x_coord)
             guess_y = int(enemy_guess.y_coord)
