@@ -1,1 +1,2 @@
 from packet_parsers.ipacket_parser import IPacketParser
+from packet_parsers.basic_packet_parser import BasicPacketParser

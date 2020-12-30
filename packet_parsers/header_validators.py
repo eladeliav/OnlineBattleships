@@ -1,7 +1,8 @@
 from sgp_structs import SUPPORTED_PACKET_TYPES, SUPPORTED_HEADERS
+from game_objects.board import BOARD_SIZE
 
 MINIMUM_BOARD_EDGE = 0
-MAXIMUM_BOARD_EDGE = 10
+MAXIMUM_BOARD_EDGE = BOARD_SIZE
 
 HEADER_DELIMITER = ":"
 
@@ -24,8 +25,8 @@ def is_valid_header(header_with_data: str):
     if delimiter_index == -1:
         return False
 
-    header = header_with_data[delimiter_index]
-    data = header_with_data[delimiter_index + 1:]
+    header = header_with_data[:delimiter_index].strip()
+    data = header_with_data[delimiter_index + 1:].strip()
     return header in SUPPORTED_HEADERS and HEADER_TO_VALIDATOR[header](data)
 
 
@@ -34,11 +35,15 @@ def is_packet_type_valid(packet_type: str):
 
 
 def is_coordinate_valid(coordinate: str):
-    return coordinate.isdigit() and MINIMUM_BOARD_EDGE <= int(coordinate) <= MAXIMUM_BOARD_EDGE
+    if coordinate.isdigit() and MINIMUM_BOARD_EDGE <= int(coordinate) <= MAXIMUM_BOARD_EDGE:
+        return True
+
+    # special case no time to make it pretty
+    return coordinate == "-1"
 
 
 def is_data_length_valid(data_length: str):
-    return data_length.isdigit() and int(data_length) > 0
+    return data_length.isdigit() and int(data_length) >= 0
 
 
 HEADER_TO_VALIDATOR = {
@@ -46,5 +51,5 @@ HEADER_TO_VALIDATOR = {
     "destination_ip": is_ip_valid,
     "x_coordinate": is_coordinate_valid,
     "y_coordinate": is_coordinate_valid,
-    "data_length:": is_data_length_valid
+    "data_length": is_data_length_valid
 }

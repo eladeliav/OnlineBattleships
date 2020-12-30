@@ -2,6 +2,13 @@ from abc import abstractmethod
 
 
 class IPlayer:
+    @abstractmethod
+    def display_my_board(self):
+        pass
+
+    @abstractmethod
+    def display_guessing_board(self):
+        pass
 
     @abstractmethod
     def setup_board(self):
@@ -17,4 +24,8 @@ class IPlayer:
 
     @abstractmethod
     def is_hit(self, x_coordinate, y_coordinate):
+        pass
+
+    @abstractmethod
+    def update_opponent_board(self, x_coordinate, y_coordinate, new_object_type):
         pass

@@ -2,10 +2,8 @@ import socket
 from connections import IConnection
 from packet_parsers import IPacketParser
 from sgp_structs import SGPStruct, SGPPacketTypes
+from game_managers import ConstantNetworkInfo
 
-DEFAULT_SGP_PORT = 20000
-LISTEN_IP = "0.0.0.0"
-EXPECTED_CONNECTIONS = 1
 DEFAULT_COORDINATE = -1
 PACKET_FORMAT = "{packet_type}" \
                 "\nsource_ip: {source_ip}" \
@@ -17,25 +15,41 @@ PACKET_FORMAT = "{packet_type}" \
 
 
 class BasicConnection(IConnection):
-    def __init__(self, packet_parser: IPacketParser):
+
+    def __init__(self, packet_parser: IPacketParser, connection: socket.socket, dst_ip, host_or_peer: int):
         self.packet_parser = packet_parser
-        self.connection, self.dst_ip = self.initialize_connection()
+        self.connection = connection
+        self.dst_ip = dst_ip
         # getting our local ip
+        self.is_host_connection = host_or_peer == ConstantNetworkInfo.HOST
         self.src_ip = socket.gethostbyname(socket.gethostname())
 
-    def initialize_connection(self):
-        listen_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-        listen_socket.bind((LISTEN_IP, DEFAULT_SGP_PORT))
-        listen_socket.listen(EXPECTED_CONNECTIONS)
+    def is_host(self):
+        return self.is_host_connection
 
-        connection, dst_ip = listen_socket.accept()
-        return connection, dst_ip
+    def __del__(self):
+        try:
+            self.connection.close()
+            print("Disconnected")
+        except socket.error as e:
+            print(e)
 
-    def send_packet(self, pkt_type, x_coord, y_coord, msg):
+    def send_packet(self, pkt_type, x_coord, y_coord, msg=''):
         formatted = PACKET_FORMAT.format(packet_type=pkt_type, source_ip=self.src_ip,
                                          destination_ip=self.dst_ip, x_coordinate=x_coord, y_coordinate=y_coord,
                                          data_length=len(msg), data=msg)
-        self.connection.send(formatted.encode())
+        try:
+            self.connection.send(formatted.encode())
+            return True
+        except socket.error as e:
+            print(e)
+            return False
+
+    def send_fail(self, msg):
+        self.send_packet(SGPPacketTypes.FAIL, DEFAULT_COORDINATE, DEFAULT_COORDINATE, msg)
+
+    def send_redo(self, msg):
+        self.send_packet(SGPPacketTypes.REDO, DEFAULT_COORDINATE, DEFAULT_COORDINATE, msg)
 
     def get_response(self) -> SGPStruct:
         return self.packet_parser.parse_packet(self.connection)

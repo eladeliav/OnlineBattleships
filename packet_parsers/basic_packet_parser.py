@@ -22,12 +22,12 @@ class BasicPacketParser(IPacketParser):
             if not current_byte:
                 return None
             data += current_byte
-        return data
+        return data.strip()
 
     def split_header_data(self, data_with_header):
         delimiter_index = data_with_header.find(HEADER_DELIMITER)
-        header = data_with_header[delimiter_index]
-        data = data_with_header[delimiter_index + 1:]
+        header = data_with_header[:delimiter_index].strip()
+        data = data_with_header[delimiter_index + 1:].strip()
         return header, data
 
     def receive_headers(self, connection: socket.socket):
@@ -50,7 +50,7 @@ class BasicPacketParser(IPacketParser):
         if not headers:
             return False
 
-        content_length = headers[SGPHeaders.DATA_LENGTH]
+        content_length = int(headers[SGPHeaders.DATA_LENGTH])
         # receive a single '\n' according to the protocol
         connection.recv(1)
 
