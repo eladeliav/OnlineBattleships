@@ -125,6 +125,8 @@ class BasicPlayer(IPlayer):
                 raise ShipNotFoundError(f"Can't find ship at {guess_point}")
 
             sunk = self.check_if_sunk(attacked_ship)
+            if sunk:
+                self.my_sunken_ships += 1
             return True, sunk
         else:
             return False, False

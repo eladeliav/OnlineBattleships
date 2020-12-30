@@ -92,8 +92,6 @@ class BasicGameManager:
                 self.winner = ConstantMessages.LOCAL_PLAYER_WIN
                 return True
 
-
-
             my_turn = did_hit
         return False
 
@@ -119,6 +117,7 @@ class BasicGameManager:
                                ConstantNetworkInfo.DEFAULT_COORDINATE, str(did_lose_data))
 
             if did_lose:
+                self.winner = ConstantMessages.ENEMY_PLAYER_WIN
                 return True
 
             enemy_turn = did_hit
