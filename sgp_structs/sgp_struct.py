@@ -1,11 +1,11 @@
 # SGP = Submarine Game Protocol
 class SGPPacketTypes:
-    GUESS = "GUESS"
-    HIT = "HIT"
-    SUNK = "SUNK"
-    LOSE = "LOSE"
-    REDO = "REDO"
-    FAIL = "FAIL"
+    GUESS = "guess"
+    HIT = "hit"
+    SUNK = "sunk"
+    LOSE = "lose"
+    REDO = "redo"
+    FAIL = "fail"
 
 
 class SGPHeaders:
