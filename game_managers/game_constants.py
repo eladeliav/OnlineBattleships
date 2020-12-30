@@ -19,7 +19,7 @@ class ConstantNetworkInfo:
 
 
 class ConstantGameConfig:
-    NUM_OF_SHIPS = 1
+    NUM_OF_SHIPS = 4
     SMALLEST_SHIP = 2
-    LARGEST_SHIP = 2
+    LARGEST_SHIP = 5
     MIN_POINT_DISTANCE = 1
